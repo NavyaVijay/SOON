@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_margin="5dp"
-        android:src="@drawable/mobile"
+        android:src="@drawable/ic_baseline_phone_android_24"
         />
 
     <EditText

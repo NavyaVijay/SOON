@@ -1,4 +1,4 @@
-package com.navya.rtautoambulance;
+package com.navya.soonapp;
 
 import org.junit.Test;
 

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_margin="5dp"
-        android:src="@drawable/profileimg"
+        android:src="@drawable/ic_baseline_how_to_reg_24"
         />
     <TextView
         android:layout_width="match_parent"
@@ -19,6 +19,7 @@
         android:textSize="30sp"
         android:layout_margin="10dp"/>
     <EditText
+        android:drawableLeft="@drawable/ic_baseline_how_to_reg_24"
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
         android:inputType="textPersonName"
         />
     <EditText
+        android:drawableLeft="@drawable/ic_baseline_add_alert_24"
         android:id="@+id/emcontact1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,6 +39,7 @@
         android:inputType="phone"
         />
     <EditText
+        android:drawableLeft="@drawable/ic_baseline_add_alert_24"
         android:id="@+id/emcontact2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,6 +49,7 @@
         android:inputType="phone"
         />
     <EditText
+        android:drawableLeft="@drawable/ic_baseline_drive_eta_24"
         android:id="@+id/vehno"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

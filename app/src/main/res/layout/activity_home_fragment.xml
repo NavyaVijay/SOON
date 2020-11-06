@@ -6,8 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".HomeFragmentActivity"
     android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        >
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/greyimg"
+        android:layout_centerHorizontal="true"/>
     <TextView
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="120dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
@@ -15,9 +26,18 @@
         android:paddingRight="15dp"
         android:paddingLeft="15dp"
         android:text="In case of Emergency press the below Button"></TextView>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+
+        <com.skyfishjy.library.RippleBackground
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/ripple"
+            app:rb_color="#000"
+            app:rb_radius="32dp"
+            app:rb_rippleAmount="4"
+            app:rb_duration="6000"
+            app:rb_scale="6">
     <Button
         android:layout_marginTop="70dp"
         android:layout_width="200dp"
@@ -27,6 +47,7 @@
         android:layout_centerInParent="true"
         android:background="@drawable/button_round"
         android:id="@+id/redb"/>
+        </com.skyfishjy.library.RippleBackground>
     </RelativeLayout>
 
 </LinearLayout>

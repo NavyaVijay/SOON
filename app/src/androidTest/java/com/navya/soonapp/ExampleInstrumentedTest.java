@@ -1,4 +1,4 @@
-package com.navya.rtautoambulance;
+package com.navya.soonapp;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.navya.rtautoambulance", appContext.getPackageName());
+        assertEquals("com.navya.soonapp", appContext.getPackageName());
     }
 }

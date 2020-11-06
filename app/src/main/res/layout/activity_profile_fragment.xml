@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ProfileFragmentActivity">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Profile Here"
-        android:layout_marginTop="56dp">
-    </TextView>
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="View Profile Here"
+      android:layout_marginTop="56dp">
+  </TextView>
 </LinearLayout>
