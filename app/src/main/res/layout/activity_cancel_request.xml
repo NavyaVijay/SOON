@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CancelRequestActivity"
+    android:orientation="vertical">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tool_bar1"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/>
+    </com.google.android.material.appbar.AppBarLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <ImageView
+        android:layout_marginTop="20dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/greyimg"
+        android:layout_centerHorizontal="true"/></RelativeLayout>
+    <TextView
+        android:layout_marginTop="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="25sp"
+        android:paddingRight="15dp"
+        android:paddingLeft="15dp"
+        android:text="You can cancel in ..."></TextView>
+    <TextView
+        android:id="@+id/count"
+        android:layout_marginTop="7dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="25sp"
+        android:paddingRight="15dp"
+        android:paddingLeft="15dp"
+
+        android:text= "00:00:05"></TextView>
+
+    <com.skyfishjy.library.RippleBackground
+        android:id="@+id/ripple"
+        android:layout_width="match_parent"
+        android:layout_height="350sp"
+        app:rb_color="#000"
+        app:rb_duration="6000"
+        app:rb_radius="32dp"
+        app:rb_rippleAmount="4"
+        app:rb_scale="6">
+
+        <Button
+            android:id="@+id/greenb"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/button_cancel_round"
+            android:text="Cancel"
+            android:textSize="40sp" />
+    </com.skyfishjy.library.RippleBackground>
+
+
+</LinearLayout>
