@@ -73,10 +73,14 @@ public class ReportFragmentActivity extends Fragment implements View.OnClickList
 
                 textVehicle.setText(reportVehicle.getText().toString());
                 String vehNo = textVehicle.getText().toString();
+                if(bitmap!=null){
                 handleUpload(bitmap);
                 Intent intent1 = new Intent(getActivity().getBaseContext(),ReportMapsActivity.class);
                 intent1.putExtra(VEHICLE_NO,vehNo);
-                getActivity().startActivity(intent1);
+                getActivity().startActivity(intent1);}
+                else{
+                    Toast.makeText(getContext(),"No Image Added",Toast.LENGTH_SHORT).show();
+                }
             break;
 
         }

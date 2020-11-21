@@ -19,7 +19,5 @@ public class NoDriverFound extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_no_driver_found);
-        toolbar=(Toolbar)findViewById(R.id.tool_bar2);
-        setSupportActionBar(toolbar);
     }
 }

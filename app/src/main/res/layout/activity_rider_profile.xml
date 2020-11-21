@@ -19,7 +19,7 @@
         android:textSize="30sp"
         android:layout_margin="10dp"/>
     <EditText
-        android:drawableLeft="@drawable/ic_baseline_how_to_reg_24"
+        android:drawableLeft="@drawable/ic_baseline_person_24"
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

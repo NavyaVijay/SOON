@@ -2,14 +2,19 @@ package com.navya.soonapp;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.SmsManager;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +22,11 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.directions.route.AbstractRouting;
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -30,9 +40,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,23 +59,28 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener,RoutingListener {
+    double locLat = 0;
+    double locLong = 0;
     Boolean first=true;
     boolean clicked = true;
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     LocationRequest mLocationRequest;
-    private LatLng accidentSpot,driverLatLng;
+    LatLng accidentSpot,driverLatLng;
     Timer timer;
     Handler handler;
-    private int radius=0;
-    private Boolean driverFound=false;
-    private String driverFoundID;
+    Button driverdetails,routedetails;
+    int radius=0;
+    Boolean driverFound=false;
+    String driverFoundID;
     Marker mDriverMarker,mRiderMarker;
     String status;
     Context context;
     ArrayList<String> Drivers;
+    private List<Polyline> polylines;
+    private static final int[] COLORS = new int[]{R.color.colorPrimaryDark,R.color.colorPrimary,R.color.colorAccent,R.color.primary_dark_material_light};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +90,21 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         context=getApplicationContext();
         Drivers=new ArrayList<String>();
+        polylines = new ArrayList<>();
+        routedetails=(Button)findViewById(R.id.mapbtn);
+        driverdetails=(Button)findViewById(R.id.driverbtn);
+        driverdetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DriverDetails(driverFoundID);
+            }
+        });
+        routedetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showroute(accidentSpot,driverLatLng);
+            }
+        });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -117,8 +150,8 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         if(first==true){
             first=false;
             closestDriver();
-         //   sendsmsyourself(location);
-   }
+           //  sendsmsyourself(location);
+        }
     }
 
     @Override
@@ -162,6 +195,8 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         GeoFire geofire = new GeoFire(ref);
         geofire.setLocation(userid, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
         accidentSpot = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        if(mRiderMarker!=null)
+        {   mRiderMarker.remove();}
         mRiderMarker=mMap.addMarker(new MarkerOptions().position(accidentSpot).title("I am here!!"));
 
 
@@ -178,7 +213,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                 String lng=String.valueOf(location.getLongitude());
                 String msg="Help!! I have met with an accident at"+"\n"+"http://maps.google.com/?q="+lat+","+lng+"\n-via SOON App";
                 SmsManager smsManager=SmsManager.getDefault();
-              smsManager.sendTextMessage(e1,null,msg,null,null);
+                smsManager.sendTextMessage(e1,null,msg,null,null);
                 smsManager.sendTextMessage(e2,null,msg,null,null);
             }
 
@@ -193,7 +228,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
         GeoFire geoFire=new GeoFire(driverLocation);
         GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(accidentSpot.latitude,accidentSpot.longitude),radius);
-        Toast.makeText(context, "Looking For Drivers within "+radius+ " km", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Looking For Drivers Nearby", Toast.LENGTH_SHORT).show();
         geoQuery.removeAllListeners();
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -205,13 +240,10 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                     Toast.makeText(context, "Driver Found", Toast.LENGTH_SHORT).show();
                     final DatabaseReference Ref = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundID);
                     final String RiderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                   /* HashMap map=new HashMap();
-                    map.put("RequestId",RiderId);
-                    map.put("Status","Requested");*/
 
                     Ref.child("CurrentRequest").child(RiderId);
                     Ref.child("CurrentRequest").child(RiderId).child("Status").setValue("Requested");
-                  /* Ref.updateChildren(map);*/
+
                     handler=new Handler();
                     Toast.makeText(context, "Waiting To Respond", Toast.LENGTH_SHORT).show();
                     handler.postDelayed(new Runnable() {
@@ -249,7 +281,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                         }
                     },15000);
 
-              /*      */
+                    /*      */
 
 
 
@@ -273,9 +305,9 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                 if(!driverFound){
                     if(radius<10){
                         radius++;
-                    closestDriver();}
+                        closestDriver();}
                     else{
-                       noDriverFound();
+                        noDriverFound();
                     }
                 }
             }
@@ -313,28 +345,35 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         return;
     }
     public void getDriverLocation(){
+        driverdetails.setVisibility(View.VISIBLE);
+        routedetails.setVisibility(View.VISIBLE);
+        Toast.makeText(getApplicationContext(),"Getting Driver Location",Toast.LENGTH_SHORT).show();
         DatabaseReference driverLocationRef=FirebaseDatabase.getInstance().getReference().child("DriverAvailable").child(driverFoundID).child("l");
         driverLocationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     List<Object> map = (List<Object>) snapshot.getValue();
-                    double locLat = 0;
-                    double locLong = 0;
+
                     if (map.get(0) != null) {
                         locLat = Double.parseDouble(map.get(0).toString());
                     }
                     if (map.get(1) != null) {
                         locLong = Double.parseDouble(map.get(1).toString());
                     }
-                    Toast.makeText(getApplicationContext(),"Getting Driver Location",Toast.LENGTH_SHORT).show();
 
                     driverLatLng = new LatLng(locLat, locLong);
                     if(mDriverMarker!=null){
                         mDriverMarker.remove();
                     }
-                    mDriverMarker=mMap.addMarker(new MarkerOptions().position(driverLatLng).title("Driver Here"));
+                    mDriverMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).position(driverLatLng).title("Driver Here"));
+                    MarkerOptions markerOptions=new MarkerOptions();
+
+                  //  showroute(accidentSpot,driverLatLng);
+                   // Toast.makeText(getApplicationContext(), ""+driverLatLng, Toast.LENGTH_LONG).show();
+                    //   getRouteToMarker(driverLatLng);
                 }
+
             }
 
             @Override
@@ -342,5 +381,119 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
 
             }
         });
+
+
+       //
+    }
+    private void showroute(LatLng accidentSpot,LatLng driverLatLng){
+        Uri uri=Uri.parse("https://www.google.co.in/maps/dir/"+mLastLocation.getLatitude()+","+mLastLocation.getLongitude()+"/"+locLat+","+locLong);
+        Intent intent =new Intent(Intent.ACTION_VIEW,uri);
+        intent.setPackage("com.google.android.apps.maps");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+    private void getRouteToMarker(LatLng driverLatLng) {
+        Routing routing = new Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .withListener(this)
+                .alternativeRoutes(true)
+                .waypoints(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()),driverLatLng)
+                .key("AIzaSyD_ypfo7ZNQMEhg5OXo9WjTpjuKKRlWYPg")
+                .build();
+        routing.execute();
+    }
+
+
+    @Override
+    public void onRoutingFailure(RouteException e) {
+        if(e != null) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRoutingStart() {
+
+    }
+
+    @Override
+    public void onRoutingSuccess(ArrayList<Route> route, int shortestrouteindex) {
+
+        if(polylines.size()>0) {
+            for (Polyline poly : polylines) {
+                poly.remove();
+            }
+        }
+
+        polylines = new ArrayList<>();
+        //add route(s) to the map.
+        for (int i = 0; i <route.size(); i++) {
+
+            //In case of more than 5 alternative routes
+            int colorIndex = i % COLORS.length;
+
+            PolylineOptions polyOptions = new PolylineOptions();
+            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
+            polyOptions.width(10 + i * 3);
+            polyOptions.addAll(route.get(i).getPoints());
+            Polyline polyline = mMap.addPolyline(polyOptions);
+            polylines.add(polyline);
+
+            Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    public void onRoutingCancelled() {
+
+    }
+    private void eraseroute(){
+        for(Polyline line:polylines){
+            line.remove();
+        }
+        polylines.clear();
+    }
+    public void  DriverDetails(final String driverFoundID){
+
+        final AlertDialog.Builder dialog=new AlertDialog.Builder(this);
+        dialog.setTitle("Driver Details");
+      DatabaseReference dref=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundID);
+        dref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists())
+                {
+                    String  name =snapshot.child("Name").getValue().toString();
+                    String  addr =snapshot.child("Address").getValue().toString();
+                    String  phno =snapshot.child("Phoneno").getValue().toString();
+                     String vhno =snapshot.child("VehicleNo").getValue().toString();
+
+                    dialog.setMessage("Name: "+ name +"\nAddress: "+ addr +"\nPhone Number: "+ phno +"\nVehicle Number: "+ vhno);
+                    dialog.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+
+                    AlertDialog dialog1=dialog.create();
+                    dialog1.show();
+                }
+
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
+
+
     }
 }

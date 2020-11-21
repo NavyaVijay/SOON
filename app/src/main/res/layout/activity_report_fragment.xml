@@ -5,15 +5,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ReportFragmentActivity"
-    android:layout_marginTop="70dp"
+    android:layout_marginTop="70sp"
     android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50sp"
+        >
+        <ImageView
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:src="@drawable/greyimg"
+            android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
     <EditText
-        android:layout_margin="10dp"
+        android:layout_margin="20dp"
         android:drawableEnd="@drawable/ic_baseline_drive_eta_24"
         android:id="@+id/reportvehno"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Vehicle Number"
+        android:hint="Enter the Vehicle Number (Optional)"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -26,8 +37,8 @@
 
         <ImageButton
             android:id="@+id/uploadimg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
             android:layout_centerInParent="true"
             android:src="@drawable/ic_baseline_add_a_photo_24"
             />
@@ -54,7 +65,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="50sp"
+        android:layout_marginRight="25sp"
+        android:layout_marginLeft="25sp"
+        android:textColor="#fff"
+        android:background="@drawable/button_report"
         android:text="Report"/>
     </RelativeLayout>
 </LinearLayout>
