@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<item
+    android:id="@+id/driverdet"
+    android:enabled="true"
+    android:title="Driver Details"
+    android:icon="@drawable/ic_baseline_person_24"/>
+    <item
+        android:id="@+id/driverroute"
+        android:enabled="true"
+        android:title="Show Route"
+        android:icon="@drawable/ic_baseline_location_on_24"/>
+</menu>

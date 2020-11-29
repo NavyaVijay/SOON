@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.loader.content.AsyncTaskLoader;
+
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -12,16 +12,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+
 import android.location.Location;
 import android.net.Uri;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.SmsManager;
-import android.util.Log;
+
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -42,7 +43,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -51,21 +53,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 
 public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCallback ,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    Button driverdetails,routedetails;
+
     double locLat = 0;
     double locLong = 0;
     private GoogleMap mMap;
@@ -85,44 +79,39 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
     Context context;
     Polyline currentPolyline;
     ArrayList<String> Drivers;
+    BottomNavigationView bottomNavigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_maps);
         Intent intent1=getIntent();
         vehNo=intent1.getStringExtra(ReportFragmentActivity.VEHICLE_NO);
-        driverdetails=(Button)findViewById(R.id.driverbtn1);
-        routedetails=(Button)findViewById(R.id.mapbtn1);
+
         context=getApplicationContext();
         Drivers=new ArrayList<String>();
-       // Toast.makeText(ReportMapsActivity.this, "Vehicle No:"+vehNo+"hi", Toast.LENGTH_SHORT).show();
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        driverdetails.setOnClickListener(new View.OnClickListener() {
+        bottomNavigationView=(BottomNavigationView)findViewById(R.id.bottomNav2);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                DriverDetails(driverFoundID);
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch(item.getItemId()){
+                    case R.id.driverdet:
+                        DriverDetails(driverFoundID);
+                        break;
+                    case R.id.driverroute:
+                        showroute(accidentSpot,driverLatLng);
+                        break;
+                }
+                return true;
             }
         });
-        routedetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showroute(accidentSpot,driverLatLng);
-            }
-        });
+
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -195,8 +184,8 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
                                         String lng=String.valueOf(location.getLongitude());
                                         String msg="Help!! "+vehNo+" have met with an accident at"+"\n"+"http://maps.google.com/?q="+lat+","+lng+"\n-via SOON App";
                                         SmsManager smsManager=SmsManager.getDefault();
-                                 /*    smsManager.sendTextMessage(es1,null,msg,null,null);
-                                     smsManager.sendTextMessage(es2,null,msg,null,null);*/
+                                   smsManager.sendTextMessage(es1,null,msg,null,null);
+                                     smsManager.sendTextMessage(es2,null,msg,null,null);
                                         Toast.makeText(ReportMapsActivity.this, "User Found, Emergency Contacts informed", Toast.LENGTH_SHORT).show();
                                     }
 
@@ -356,7 +345,7 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
         return;
     }
     public void getDriverLocation(){
-        driverdetails.setVisibility(View.VISIBLE);
+        bottomNavigationView.setVisibility(View.VISIBLE);
         Toast.makeText(getApplicationContext(),"Getting Driver Location",Toast.LENGTH_SHORT).show();
         DatabaseReference driverLocationRef=FirebaseDatabase.getInstance().getReference().child("DriverAvailable").child(driverFoundID).child("l");
         driverLocationRef.addValueEventListener(new ValueEventListener() {
@@ -387,7 +376,7 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
 
             }
         });
-        routedetails.setVisibility(View.VISIBLE);
+      //  routedetails.setVisibility(View.VISIBLE);
     }
     private void showroute(LatLng accidentSpot,LatLng driverLatLng){
         Uri uri=Uri.parse("https://www.google.co.in/maps/dir/"+mLastLocation.getLatitude()+","+mLastLocation.getLongitude()+"/"+locLat+","+locLong);

@@ -4,10 +4,90 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AboutFragmentActivity">
+    tools:context=".AboutFragmentActivity"
+    android:orientation="vertical"
+    android:layout_marginTop="60dp">
+   <TextView
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="Instructions to use:"
+     android:textSize="20sp"
+       android:padding="10sp"
+     />
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="56dp"
-      android:text="About Us Here"></TextView>
+      android:text="In case of Emergency,"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="\t\t\t\t\tShake your phone"
+      android:drawableLeft="@drawable/ic_baseline_vibration_24"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="\t\t\t\t\tTap the 'Help Me' Button"
+      android:drawableLeft="@drawable/ic_baseline_touch_app_24"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="To Report an Accident,"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="\t\t\t\t\tAdd the Accident image"
+      android:drawableLeft="@drawable/ic_baseline_add_a_photo_2424"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="\t\t\t\t\tAdd the vehicle number (optional)"
+      android:drawableLeft="@drawable/ic_baseline_drive_eta_24"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="\t\t\t\t\tTap the Report Button"
+      android:drawableLeft="@drawable/ic_baseline_add_alert_24"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#D30"
+        android:text="\nBe Safe! Help Others!"
+        android:textSize="20sp"
+        android:padding="10sp"
+android:layout_centerHorizontal="true"
+        />
+  <TextView
+      android:layout_alignParentBottom="true"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Note: Make sure to give all the app permissions before you start\n"
+      android:textSize="20sp"
+      android:padding="10sp"
+      />
+</RelativeLayout>
 </LinearLayout>

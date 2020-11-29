@@ -50,8 +50,6 @@ public class ReportFragmentActivity extends Fragment implements View.OnClickList
         view = inflater.inflate(R.layout.activity_report_fragment, container, false);
         reportVehicle = (EditText) view.findViewById(R.id.reportvehno);
         textVehicle=(TextView)view.findViewById(R.id.txtvehicle);
-       /*e1=(TextView)view.findViewById(R.id.e1);
-        e2=(TextView)view.findViewById(R.id.e2);*/
         imgbtn = (ImageButton) view.findViewById(R.id.uploadimg);
         imgbtn.setOnClickListener(this);
         rButton = (Button) view.findViewById(R.id.reportbtn);
@@ -93,7 +91,7 @@ public class ReportFragmentActivity extends Fragment implements View.OnClickList
             switch (resultCode){
                 case  RESULT_OK:
                     bitmap=(Bitmap) data.getExtras().get("data");
-                 //   handleUpload(bitmap);
+
             }
         }
     }

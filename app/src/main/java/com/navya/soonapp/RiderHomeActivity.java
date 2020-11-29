@@ -84,6 +84,7 @@ public class RiderHomeActivity extends AppCompatActivity {
 
             }
         });
+        navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

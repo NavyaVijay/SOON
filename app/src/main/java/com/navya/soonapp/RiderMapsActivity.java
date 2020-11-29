@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.SmsManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -46,6 +47,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,10 +61,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener,RoutingListener {
+public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     double locLat = 0;
     double locLong = 0;
     Boolean first=true;
+    Boolean update=false;
     boolean clicked = true;
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
@@ -71,7 +74,9 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     LatLng accidentSpot,driverLatLng;
     Timer timer;
     Handler handler;
-    Button driverdetails,routedetails;
+    public static String e1,e2;
+
+
     int radius=0;
     Boolean driverFound=false;
     String driverFoundID;
@@ -79,7 +84,8 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     String status;
     Context context;
     ArrayList<String> Drivers;
-    private List<Polyline> polylines;
+    BottomNavigationView bottomNavigationView;
+
     private static final int[] COLORS = new int[]{R.color.colorPrimaryDark,R.color.colorPrimary,R.color.colorAccent,R.color.primary_dark_material_light};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,21 +96,22 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         context=getApplicationContext();
         Drivers=new ArrayList<String>();
-        polylines = new ArrayList<>();
-        routedetails=(Button)findViewById(R.id.mapbtn);
-        driverdetails=(Button)findViewById(R.id.driverbtn);
-        driverdetails.setOnClickListener(new View.OnClickListener() {
+        bottomNavigationView=(BottomNavigationView)findViewById(R.id.bottomNav1);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                DriverDetails(driverFoundID);
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch(item.getItemId()){
+                    case R.id.driverdet:
+                        DriverDetails(driverFoundID);
+                        break;
+                    case R.id.driverroute:
+                        showroute(accidentSpot,driverLatLng);
+                        break;
+                }
+                return true;
             }
         });
-        routedetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showroute(accidentSpot,driverLatLng);
-            }
-        });
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -150,7 +157,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         if(first==true){
             first=false;
             closestDriver();
-           //  sendsmsyourself(location);
+            sendsmsyourself(location);
         }
     }
 
@@ -190,6 +197,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     }
 
     public void onclick() {
+        update=true;
         String userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Requests");
         GeoFire geofire = new GeoFire(ref);
@@ -204,25 +212,31 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     public void sendsmsyourself(final Location location){
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference dr = FirebaseDatabase.getInstance().getReference();
-        dr.child("Users").child("Riders").child(user_id).addValueEventListener(new ValueEventListener() {
+        dr.child("Users").child("Riders").child(user_id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String e1=snapshot.child("EmergencyContact1").getValue().toString();
-                String e2=snapshot.child("EmergencyContact2").getValue().toString();
-                String lat=String.valueOf(location.getLatitude());
-                String lng=String.valueOf(location.getLongitude());
-                String msg="Help!! I have met with an accident at"+"\n"+"http://maps.google.com/?q="+lat+","+lng+"\n-via SOON App";
-                SmsManager smsManager=SmsManager.getDefault();
-                smsManager.sendTextMessage(e1,null,msg,null,null);
-                smsManager.sendTextMessage(e2,null,msg,null,null);
-            }
+                if(snapshot.exists()){
+                 e1=snapshot.child("EmergencyContact1").getValue().toString();
+                 e2=snapshot.child("EmergencyContact2").getValue().toString();
+                 String lat=String.valueOf(location.getLatitude());
+                 String lng=String.valueOf(location.getLongitude());
+                    if(update==true){
+                        String msg="Help!! I have met with an accident at"+"\n"+"http://maps.google.com/?q="+lat+","+lng+"\n-via SOON App";
+                        SmsManager smsManager=SmsManager.getDefault();
+                        smsManager.sendTextMessage(e1,null,msg,null,null);
+                        smsManager.sendTextMessage(e2,null,msg,null,null);}
+                }
+               }
+
+
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
-        });
-    }
+            });
+        }
+
 
     public void closestDriver(){
         DatabaseReference driverLocation=FirebaseDatabase.getInstance().getReference().child("DriverAvailable");
@@ -345,8 +359,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         return;
     }
     public void getDriverLocation(){
-        driverdetails.setVisibility(View.VISIBLE);
-        routedetails.setVisibility(View.VISIBLE);
+        bottomNavigationView.setVisibility(View.VISIBLE);
         Toast.makeText(getApplicationContext(),"Getting Driver Location",Toast.LENGTH_SHORT).show();
         DatabaseReference driverLocationRef=FirebaseDatabase.getInstance().getReference().child("DriverAvailable").child(driverFoundID).child("l");
         driverLocationRef.addValueEventListener(new ValueEventListener() {
@@ -369,9 +382,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                     mDriverMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).position(driverLatLng).title("Driver Here"));
                     MarkerOptions markerOptions=new MarkerOptions();
 
-                  //  showroute(accidentSpot,driverLatLng);
-                   // Toast.makeText(getApplicationContext(), ""+driverLatLng, Toast.LENGTH_LONG).show();
-                    //   getRouteToMarker(driverLatLng);
+
                 }
 
             }
@@ -383,7 +394,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         });
 
 
-       //
+
     }
     private void showroute(LatLng accidentSpot,LatLng driverLatLng){
         Uri uri=Uri.parse("https://www.google.co.in/maps/dir/"+mLastLocation.getLatitude()+","+mLastLocation.getLongitude()+"/"+locLat+","+locLong);
@@ -392,70 +403,8 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
-    private void getRouteToMarker(LatLng driverLatLng) {
-        Routing routing = new Routing.Builder()
-                .travelMode(AbstractRouting.TravelMode.DRIVING)
-                .withListener(this)
-                .alternativeRoutes(true)
-                .waypoints(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()),driverLatLng)
-                .key("AIzaSyD_ypfo7ZNQMEhg5OXo9WjTpjuKKRlWYPg")
-                .build();
-        routing.execute();
-    }
 
 
-    @Override
-    public void onRoutingFailure(RouteException e) {
-        if(e != null) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
-            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRoutingStart() {
-
-    }
-
-    @Override
-    public void onRoutingSuccess(ArrayList<Route> route, int shortestrouteindex) {
-
-        if(polylines.size()>0) {
-            for (Polyline poly : polylines) {
-                poly.remove();
-            }
-        }
-
-        polylines = new ArrayList<>();
-        //add route(s) to the map.
-        for (int i = 0; i <route.size(); i++) {
-
-            //In case of more than 5 alternative routes
-            int colorIndex = i % COLORS.length;
-
-            PolylineOptions polyOptions = new PolylineOptions();
-            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
-            polyOptions.width(10 + i * 3);
-            polyOptions.addAll(route.get(i).getPoints());
-            Polyline polyline = mMap.addPolyline(polyOptions);
-            polylines.add(polyline);
-
-            Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
-        }
-
-    }
-
-    @Override
-    public void onRoutingCancelled() {
-
-    }
-    private void eraseroute(){
-        for(Polyline line:polylines){
-            line.remove();
-        }
-        polylines.clear();
-    }
     public void  DriverDetails(final String driverFoundID){
 
         final AlertDialog.Builder dialog=new AlertDialog.Builder(this);
