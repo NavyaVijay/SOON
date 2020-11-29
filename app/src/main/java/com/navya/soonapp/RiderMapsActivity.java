@@ -148,7 +148,6 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
 
     @Override
     public void onLocationChanged(final Location location) {
-
         mLastLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -295,7 +294,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                         }
                     },15000);
 
-                    /*      */
+
 
 
 
