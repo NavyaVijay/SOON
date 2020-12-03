@@ -30,16 +30,16 @@ public class RiderProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                String user_id = user.getUid();
-                DatabaseReference current_user_vehno = FirebaseDatabase.getInstance().getReference().child("Users").child("Riders").child(user_id).child("VehicleNo");
+                String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DatabaseReference ref=FirebaseDatabase.getInstance().getReference().child("Users").child("Riders").child(user_id);
+                DatabaseReference current_user_vehno = ref.child("VehicleNo");
                 current_user_vehno.setValue(vehno.getText().toString());
-                if (name.getText() != null || emcontact1.getText() != null || emcontact2.getText() != null) {
-                    DatabaseReference current_user_name = FirebaseDatabase.getInstance().getReference().child("Users").child("Riders").child(user_id).child("Name");
+                if (!name.getText().toString().equals("")&&!emcontact1.getText().toString().equals("")&&!emcontact2.getText().toString().equals("")) {
+                    DatabaseReference current_user_name = ref.child("Name");
                     current_user_name.setValue(name.getText().toString());
-                    DatabaseReference current_user_emcontact1 = FirebaseDatabase.getInstance().getReference().child("Users").child("Riders").child(user_id).child("EmergencyContact1");
+                    DatabaseReference current_user_emcontact1 =ref.child("EmergencyContact1");
                     current_user_emcontact1.setValue(emcontact1.getText().toString());
-                    DatabaseReference current_user_emcontact2 = FirebaseDatabase.getInstance().getReference().child("Users").child("Riders").child(user_id).child("EmergencyContact2");
+                    DatabaseReference current_user_emcontact2 = ref.child("EmergencyContact2");
                     current_user_emcontact2.setValue(emcontact2.getText().toString());
                     startActivity(new Intent(RiderProfileActivity.this, RiderHomeActivity.class));
                     finish();

@@ -19,6 +19,7 @@
             android:layout_centerHorizontal="true"/>
     </RelativeLayout>
     <EditText
+        android:autoSizeTextType="uniform"
         android:layout_margin="20dp"
         android:drawableEnd="@drawable/ic_baseline_drive_eta_24"
         android:id="@+id/reportvehno"

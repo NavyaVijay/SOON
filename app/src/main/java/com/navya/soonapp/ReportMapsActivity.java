@@ -77,7 +77,7 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
     Marker mDriverMarker,mRiderMarker;
     String status,key,es1,es2,vehNo;
     Context context;
-    Polyline currentPolyline;
+    Boolean sec=true;
     ArrayList<String> Drivers;
     BottomNavigationView bottomNavigationView;
     @Override
@@ -159,7 +159,34 @@ public class ReportMapsActivity extends FragmentActivity implements OnMapReadyCa
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        final String userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference r=FirebaseDatabase.getInstance().getReference().child("Requests");
+        final DatabaseReference rem=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers");
 
+        if(driverFoundID!=null) {
+            rem.child(driverFoundID).child("CurrentRequest").child(userID).child("Status").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.getValue().toString().equals("completed")) {
+                        GeoFire gr = new GeoFire(r);
+                        gr.removeLocation(userID);
+                        rem.child(driverFoundID).child("CurrentRequest").child(userID).removeValue();
+                        mGoogleApiClient.disconnect();
+                        Intent i = new Intent(getApplication(),ReportThanks.class);
+                        startActivity(i);
+                        finish();
+                        return;
+                    } else {
+                        onclick();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
        if(first==true){
            first=false;
            onclick();

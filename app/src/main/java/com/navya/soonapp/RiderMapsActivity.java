@@ -15,7 +15,7 @@ import android.telephony.SmsManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
+
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,11 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.directions.route.AbstractRouting;
-import com.directions.route.Route;
-import com.directions.route.RouteException;
-import com.directions.route.Routing;
-import com.directions.route.RoutingListener;
+
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -64,6 +60,7 @@ import java.util.TimerTask;
 public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     double locLat = 0;
     double locLong = 0;
+    int i=0;
     Boolean first=true;
     Boolean update=false;
     boolean clicked = true;
@@ -72,7 +69,6 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     Location mLastLocation;
     LocationRequest mLocationRequest;
     LatLng accidentSpot,driverLatLng;
-    Timer timer;
     Handler handler;
     public static String e1,e2;
 
@@ -86,7 +82,6 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
     ArrayList<String> Drivers;
     BottomNavigationView bottomNavigationView;
 
-    private static final int[] COLORS = new int[]{R.color.colorPrimaryDark,R.color.colorPrimary,R.color.colorAccent,R.color.primary_dark_material_light};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,13 +147,43 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        onclick();
+        final String userID=FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference r=FirebaseDatabase.getInstance().getReference().child("Requests");
+        final DatabaseReference rem=FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers");
+
+        if(driverFoundID!=null) {
+            rem.child(driverFoundID).child("CurrentRequest").child(userID).child("Status").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.getValue().toString().equals("completed")) {
+                        GeoFire gr = new GeoFire(r);
+                        gr.removeLocation(userID);
+                        rem.child(driverFoundID).child("CurrentRequest").child(userID).removeValue();
+                        mGoogleApiClient.disconnect();
+                        Intent i = new Intent(getApplication(),ThanksActivity.class);
+                        startActivity(i);
+                        finish();
+                        return;
+                    } else {
+                        onclick();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
         if(first==true){
             first=false;
+            onclick();
             closestDriver();
             sendsmsyourself(location);
         }
     }
+
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -250,14 +275,13 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                     driverFound = true;
                     driverFoundID = key;
                     Drivers.add(driverFoundID);
-                    Toast.makeText(context, "Driver Found", Toast.LENGTH_SHORT).show();
+
                     final DatabaseReference Ref = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundID);
                     final String RiderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                    Ref.child("CurrentRequest").child(RiderId);
+                    Toast.makeText(context, "Driver Found", Toast.LENGTH_SHORT).show();
                     Ref.child("CurrentRequest").child(RiderId).child("Status").setValue("Requested");
 
-                    handler=new Handler();
+                    handler = new Handler();
                     Toast.makeText(context, "Waiting To Respond", Toast.LENGTH_SHORT).show();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -286,17 +310,14 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                                         onGeoQueryReady();
                                     }
                                 }
+
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError error) {
 
                                 }
                             });
                         }
-                    },15000);
-
-
-
-
+                    }, 15000);
 
                 }
 
@@ -379,7 +400,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
                         mDriverMarker.remove();
                     }
                     mDriverMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).position(driverLatLng).title("Driver Here"));
-                    MarkerOptions markerOptions=new MarkerOptions();
+
 
 
                 }
@@ -395,6 +416,7 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
 
 
     }
+
     private void showroute(LatLng accidentSpot,LatLng driverLatLng){
         Uri uri=Uri.parse("https://www.google.co.in/maps/dir/"+mLastLocation.getLatitude()+","+mLastLocation.getLongitude()+"/"+locLat+","+locLong);
         Intent intent =new Intent(Intent.ACTION_VIEW,uri);
@@ -439,9 +461,5 @@ public class RiderMapsActivity extends FragmentActivity implements OnMapReadyCal
 
             }
         });
-
-
-
-
     }
 }

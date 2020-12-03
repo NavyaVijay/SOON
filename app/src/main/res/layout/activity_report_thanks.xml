@@ -1,0 +1,26 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ReportThanks"
+    android:orientation="vertical">
+
+    <TextView
+        android:background="@drawable/launcherimage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:layout_marginTop="70dp"
+        android:text="THANK YOU"
+        android:autoSizeTextType="uniform"
+        android:minHeight="50sp"
+        android:textColor="#fff"/>
+
+
+</RelativeLayout>
